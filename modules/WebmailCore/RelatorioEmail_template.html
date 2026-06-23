@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: Aptos, Helvetica, sans-serif;
+      font-size: 14px;
+      color: #111;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 720px;
+      margin-bottom: 18px;
+    }
+
+    th,
+    td {
+      border: 1px solid #bbb;
+      padding: 6px 8px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    th.header {
+      background: #1f3864;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    td.label {
+      background: #f2f2f2;
+      text-align: left;
+    }
+
+    td.sub {
+      background: #e9e9e9;
+      text-align: center;
+    }
+
+    td.total_header {
+      background: #222a35;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .right {
+      text-align: right;
+      padding-right: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <p>Prezados, segue abaixo o relatório de saídas de higiênicos registradas no mês de <b>{{month}}</b>.</p>
+  <br></br>
+  <p>| SAÍDAS POR PERÍODO, EM {{date1}} – {{date2}}.</p>
+
+  <!-- ARAGUAIA SHOPPING -->
+  <table>
+    <tr>
+      <th class="header" colspan="2">ARAGUAIA SHOPPING</th>
+      <th class="header">UND</th>
+      <th class="header">VALOR UNI</th>
+    </tr>
+    <tr>
+      <td class="label">PAPEL HIGIÊNICO</td>
+      <td class="sub">{{phacx}} CX</td>
+      <td class="sub">{{pharl}} RL</td>
+      <td class="sub">{{valpha}}</td>
+    </tr>
+    <tr>
+      <td class="label">PAPEL TOALHA</td>
+      <td class="sub">{{ptacx}} CX</td>
+      <td class="sub">{{ptarl}} RL</td>
+      <td class="sub">{{valpta}}</td>
+      <th class="header">TOTAL</th>
+    </tr>
+    <tr>
+      <td class="label">SABONETE LÍQUIDO</td>
+      <td class="sub">{{sacx}} CX</td>
+      <td class="sub">{{sagl}} GL</td>
+      <td class="sub">{{valsa}}</td>
+      <td class="sub">{{valtta}}</td>
+    </tr>
+  </table>
+
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  <br><br>
+  <!-- TERMINAL RODOVIÁRIO -->
+  <table>
+    <tr>
+      <th class="header" colspan="2">TERMINAL RODOVIÁRIO</th>
+      <th class="header">UND</th>
+      <th class="header">VALOR UNI</th>
+    </tr>
+    <tr>
+      <td class="label">PAPEL HIGIÊNICO</td>
+      <td class="sub">{{phtrcx}} CX</td>
+      <td class="sub">{{phtrrl}} RL</td>
+      <td class="sub">{{valphtr}}</td>
+    </tr>
+    <tr>
+      <td class="label">PAPEL TOALHA</td>
+      <td class="sub">{{pttrcx}} CX</td>
+      <td class="sub">{{pttrrl}} RL</td>
+      <td class="sub">{{valpttr}}</td>
+      <th class="header">TOTAL</th>
+    </tr>
+    <tr>
+      <td class="label">SABONETE LÍQUIDO</td>
+      <td class="sub">{{strcx}} CX</td>
+      <td class="sub">{{strgl}} GL</td>
+      <td class="sub">{{valstr}}</td>
+      <td class="sub">{{valtttr}}</td>
+    </tr>
+  </table>
+
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  <br><br>
+  <!-- TOTAL ARA + TR1 -->
+  <table>
+    <tr>
+      <th class="header" colspan="2">TOTAL DE SAÍDAS | ARA + TR1</th>
+      <th class="header">UND</th>
+      <th class="header">VALOR UNI</th>
+    </tr>
+
+    <tr>
+      <td class="label">PAPEL HIGIÊNICO</td>
+      <td class="sub">{{phtsc}} CX</td>
+      <td class="sub">{{phtsrl}} RL</td>
+      <td class="sub">{{valphtt}}</td>
+    </tr>
+    <tr>
+      <td class="label">PAPEL TOALHA</td>
+      <td class="sub">{{pttsc}} CX</td>
+      <td class="sub">{{pttsrl}} RL</td>
+      <td class="sub">{{valpttt}}</td>
+      <th class="header">TOTAL</th>
+    </tr>
+    <tr>
+      <td class="label">SABONETE LÍQUIDO</td>
+      <td class="sub">{{stsc}} CX</td>
+      <td class="sub">{{stsgl}} GL</td>
+      <td class="sub">{{valstt}}</td>
+      <td class="sub">{{valtt}}</td>
+    </tr>
+  </table>
+
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  <p>Segue a tabela abaixo com o estoque atual disponível;</p>
+
+  <!-- ESTOQUE ATUAL -->
+  <table style="max-width:480px;">
+    <tr>
+      <th class="header" colspan="2">ESTOQUE ATUAL | MB + R3</th>
+      <th class="header">UND</th>
+    </tr>
+    <tr>
+      <td class="label">PAPEL HIGIÊNICO</td>
+      <td class="sub">{{eahigc}} CX</td>
+      <td class="sub">{{eahigrl}} RL</td>
+    </tr>
+    <tr>
+      <td class="label">PAPEL TOALHA</td>
+      <td class="sub">{{eatoc}} CX</td>
+      <td class="sub">{{eator}} RL</td>
+    </tr>
+    <tr>
+      <td class="label">SABONETE LÍQUIDO</td>
+      <td class="sub">{{easab}} CX</td>
+      <td class="sub">{{easab2}} GL</td>
+    </tr>
+  </table>
+
+  <br><br>
+  <p>Atenciosamente:</p>
+  <img src="cid:assinatura_logo" alt="Assinatura" />
+
+  <p style="color: #aaaaaa; font-size: 11px; margin-top: 8px;">Este é um e-mail automático. Todavia confirme o recebimento e as informações do mesmo.</p>
+</body>
+
+</html>

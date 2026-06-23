@@ -1,0 +1,5 @@
+*.sqlite
+*dbisam*
+*.vscode
+*temp
+*.env*
