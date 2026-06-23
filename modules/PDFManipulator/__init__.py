@@ -6,8 +6,6 @@ from datetime import date
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 
 PAGE_W, PAGE_H = A4
 LEFT = 15 * mm

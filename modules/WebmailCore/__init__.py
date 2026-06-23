@@ -31,7 +31,7 @@ class start:
         os.environ["SE_OFFLINE"] = "true"
         
         if not WEBSITE or not EMAIL or not PASSWORD:
-            raise Exception("Environement not setted!")
+            raise Exception("Environement not set!")
         
         while tried >= 0:
             try:

@@ -207,7 +207,15 @@ def Main():
 
         clear()
         if script_choise == "1":
+            EMAIL_BUYER = os.getenv("EMAIL_BUYER")
+            EMAIL_HYGIENIC_SUPPLIER = os.getenv("EMAIL_HYGIENIC_SUPPLIER")
+            EMAIL_SHOPPING_SUPERVISOR = os.getenv("EMAIL_SHOPPING_SUPERVISOR")
+            EMAIL_OPERATIONAL_SUPERVISOR = os.getenv("EMAIL_OPERATIONAL_SUPERVISOR")
+            
             figlet("PEDIDOS")
+
+            if not EMAIL_BUYER or not EMAIL_HYGIENIC_SUPPLIER or not EMAIL_SHOPPING_SUPERVISOR or not EMAIL_OPERATIONAL_SUPERVISOR:
+                raise Exception("Environement not set!")
 
             webmail = modules.WebmailCore(30, WebmailFullScreen)
             sql = modules.DBCore()
@@ -279,7 +287,7 @@ def Main():
                     stock["IDEAL"][key] = item["ideal"]
 
             # place = "receive" or "sent"
-            emailContent = webmail.fetchEmail("edielson.santos@mbinvestimentos.com.br Pedido de Compra Terminal Rodoviário de Goiânia e Araguaia Shopping", "receive")
+            emailContent = webmail.fetchEmail(f"{EMAIL_BUYER} Pedido de Compra Terminal Rodoviário de Goiânia e Araguaia Shopping", "receive")
 
             if extractedValues := webmail.extractValues(emailContent, "EDIELSON"):
                 totalPurchaseHig = extractedValues["COMLI"]["HIG"] + \
@@ -301,8 +309,8 @@ def Main():
             if purchaseNeeded:
                 webmail.sendEmail(
                     "shipment", 
-                    ["jeniffer.comercial@r3suprimentos.com.br"],
-                    ["murilo.ferreira@mbinvestimentos.com.br", "edielson.santos@mbinvestimentos.com.br", "parreira@mbinvestimentos.com.br"],
+                    [EMAIL_HYGIENIC_SUPPLIER],
+                    [EMAIL_OPERATIONAL_SUPERVISOR, EMAIL_BUYER, EMAIL_SHOPPING_SUPERVISOR],
                     actualStock=stock,
                     stockNeeded=valuesNeeded
                 )
@@ -314,6 +322,14 @@ def Main():
             clear()
             
             figlet("RELATORIO")
+            
+            EMAIL_BUYER = os.getenv("EMAIL_BUYER")
+            EMAIL_TR_SUPERVISOR = os.getenv("EMAIL_TR_SUPERVISOR")
+            EMAIL_SHOPPING_SUPERVISOR = os.getenv("EMAIL_SHOPPING_SUPERVISOR")
+            EMAIL_OPERATIONAL_SUPERVISOR = os.getenv("EMAIL_OPERATIONAL_SUPERVISOR")
+            
+            if not EMAIL_BUYER or not EMAIL_TR_SUPERVISOR or not EMAIL_SHOPPING_SUPERVISOR or not EMAIL_OPERATIONAL_SUPERVISOR:
+                raise Exception("Environement not set!")
             
             webmail = modules.WebmailCore(30, WebmailFullScreen)
             sql = modules.DBCore()
@@ -359,7 +375,7 @@ def Main():
                     stockTotal['sab'] += item["quantity"]
 
             # place = "receive" or "sent"
-            emailContent = webmail.fetchEmail("edielson.santos@mbinvestimentos.com.br Pedido de Compra Terminal Rodoviário de Goiânia e Araguaia Shopping", "receive")
+            emailContent = webmail.fetchEmail(f"{EMAIL_BUYER} Pedido de Compra Terminal Rodoviário de Goiânia e Araguaia Shopping", "receive")
 
             if extractedValues := webmail.extractValues(emailContent, "EDIELSON"):
                 totalPurchaseHig = extractedValues["COMLI"]["HIG"] + \
@@ -378,77 +394,16 @@ def Main():
                     
             webmail.sendEmail(
                 "report", 
-                ["guga.4004@hotmail.com"],
-                # ["parreira@mbinvestimentos.com.br"],
-                # ["murilo.ferreira@mbinvestimentos.com.br", "edielson.santos@mbinvestimentos.com.br", "eleir@mbinvestimentos.com.br"],
+                # ["guga.4004@hotmail.com"],
+                [EMAIL_SHOPPING_SUPERVISOR],
+                [EMAIL_OPERATIONAL_SUPERVISOR, EMAIL_BUYER, EMAIL_TR_SUPERVISOR],
                 startDate=start_date,
                 finishDate=finish_date,
                 reportValues=reportValues,
                 stockTotal=stockTotal
             )
         
-            close(sql, webmail, pdf)       
-            
-            # print(pyfiglet.figlet_format("RELATORIO", font="roman", width=170, justify="center"))
-            # driver, wait = modules.WebmailCore(80, WebmailFullScreen)
-
-            # pdf = modules.PDFManipulator()
-            # EFManager = modules.EFManager(pdf, pdfFolder)
-
-            # sql = modules.WPPParser()
-
-            # exits = sql.getMovements()
-
-            # EFManager.insertMovements(exits)
-
-            # EFManager.getRelatorios("estoque")
-            # EFManager.getRelatorios("saidas material")
-            # EFManager.getRelatorios("saidas centro custo")
-
-            # mergedTr: str = pdf.MergePDF(
-            #     pdfFolder, "TR_DESC", "TR_SUMA", None, "Relatorio de Higiênicos - TR1")
-            
-            # mergedComli: str = pdf.MergePDF(
-            #     pdfFolder, "COMLI_DESC", "COMLI_SUMA", None, "Relatorio de Higiênicos - COMLI")
-            
-            # pdf.MergePDF(pdfFolder, "OUT_HIG", "OUT_TOA",
-            #                 "OUT_SAB", "Relatorio de Higiênicos - Total")
-
-            # trPDF = pdf.extractPDF(pdfFolder, mergedTr)
-            # comliPDF = pdf.extractPDF(pdfFolder, mergedComli)
-            # estoquePDF = pdf.extractPDF(pdfFolder, "Estoque Atual.ignore.pdf")
-
-            # EFManager.getR3Stock()
-
-            # r3pdf = pdf.extractPDF(pdfFolder, "estoquer3.ignore.pdf")
-
-            # email = modules.EmailParsers(
-            #     driver=driver,
-            #     wait=wait,
-            #     folder=pdfFolder,
-            #     parser="relatorio",
-            #     TO=["parreira@mbinvestimentos.com.br"],
-            #     CC=["murilo.ferreira@mbinvestimentos.com.br",
-            #         "edielson.santos@mbinvestimentos.com.br", "eleir@mbinvestimentos.com.br"],
-            #     r3pdf=r3pdf
-            # )
-
-            # email.extractOutputs(trPDF)
-            # email.extractOutputs(comliPDF)
-            # email.extractStocks(estoquePDF)
-
-            # email.extractEmails(
-            #     "edielson.santos@mbinvestimentos.com.br Pedido de Compra Terminal Rodoviário de Goiânia e Araguaia Shopping", "receive")
-            # email.extractEmails(
-            #     "parreira@mbinvestimentos.com.br Relatório de Higiênicos", "sent")
-
-            # if email.printPreview():
-            #     email.sendEmail()
-            #     print("\n> Limpando restos...")
-            # else:
-            #     print("\n> Terminando programa...")
-
-            # driver.quit()
+            close(sql, webmail, pdf)
         args = None
 
 if __name__ == "__main__":

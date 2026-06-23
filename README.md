@@ -19,7 +19,7 @@ Este sistema automatiza os processos manuais do almoxarifado:
 
 | Camada       | Tecnologia                                         |
 |--------------|----------------------------------------------------|
-| **Linguagem** | Python 3.12+                                      |
+| **Linguagem** | Python 3.14+                                      |
 | **CLI**       | Terminal interativo com `pyfiglet`                 |
 | **Web Server**| Flask + Flask-SocketIO + Eventlet                  |
 | **Banco**     | SQLite (via `sqlite3`)                             |
@@ -69,9 +69,9 @@ Este sistema automatiza os processos manuais do almoxarifado:
 
 ### 1. 📦 Pedido Semanal de Reposição (`higienicos.py` — opção 1)
 
-1. Conecta ao webmail e busca o e-mail de pedido de compra do Edielson.
+1. Conecta ao webmail e busca o e-mail relacionado a compra para o estoque da fornecedora.
 2. Extrai os valores de compra (papel higiênico, toalha, sabonete) para os centros de custo COMLI (Shopping) e TR1 (Terminal).
-3. Atualiza o estoque da R3 com as compras encontradas.
+3. Atualiza o estoque da R3 no banco de dados com as compras encontradas.
 4. Calcula a necessidade de cada item:
    - `necessidade = max(0, min(ideal - atual, disponível_R3))` se >= mínimo, senão 0.
 5. Exibe prévia no terminal e permite ajuste manual dos valores.
@@ -91,7 +91,7 @@ Este sistema automatiza os processos manuais do almoxarifado:
    - Itens agrupados com data, nota fiscal, unidade, quantidade, valor unitário e valor total
    - Totais por item e total geral do centro de custo
    - Responsável por cada movimentação
-5. Busca o e-mail de compra para atualizar o estoque total.
+5. Busca o e-mail de compra para atualizar o estoque total (assim como no item 2 e 3 do Pedido Semanal).
 6. Envia e-mail com os 3 PDFs anexados e tabela consolidada no corpo do e-mail.
 
 ### 3. 🌐 Interface Web de Registro (`server.py`)
