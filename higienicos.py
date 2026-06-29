@@ -7,7 +7,6 @@ import modules
 import pyfiglet
 import datetime
 import tempfile
-import argparse
 import traceback
 import subprocess
 

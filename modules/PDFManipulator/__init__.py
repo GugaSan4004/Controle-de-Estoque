@@ -48,6 +48,10 @@ class start:
         self.page_num = 0
         
         self.output_path = Path.cwd() / "modules" / "PDFManipulator" / "pdf_files"
+        
+        if not os.path.exists(self.output_path):
+            os.mkdir(self.output_path)
+            
         if os.path.exists(self.output_path / "resume_temp.pdf"):
             os.remove(self.output_path / "resume_temp.pdf")
         
