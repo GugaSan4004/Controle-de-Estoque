@@ -30,7 +30,7 @@ Socket = SocketIO(
 )
 
 with app.app_context():
-    print("> Server initiated successfully!")
+    print("\n> Server initiated successfully!")
 
 type_dict = {
     "BOX": "Caixas",

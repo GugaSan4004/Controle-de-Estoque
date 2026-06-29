@@ -1,3 +1,4 @@
+import os
 import sqlite3
 
 from pathlib import Path
@@ -5,7 +6,23 @@ from pathlib import Path
 class start:
     def __init__(self):        
         print("\n> Inicializando DataBase...")
-        self.connector = sqlite3.connect(Path.cwd() / "modules" / "DBCore" / "db.sqlite", check_same_thread=False)
+        
+        db_file = Path.cwd() / "modules" / "DBCore" / "db.sqlite"
+        
+        db_exists = db_file.exists()
+        
+        self.connector = sqlite3.connect(db_file, check_same_thread=False)
+        
+        if not db_exists:
+            print(">> Banco não encontrado. Aplicando schema...")
+            schema_file = Path.cwd() / "modules" / "DBCore" / "schema.sql"
+            
+            with open(schema_file, "r") as f:
+                sql_schema = f.read()
+            
+            with self.connector:
+                self.connector.executescript(sql_schema)
+            
         self.connector.row_factory = sqlite3.Row
         
         __cur = self.connector.cursor()

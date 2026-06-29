@@ -49,10 +49,10 @@ class start:
         
         self.output_path = Path.cwd() / "modules" / "PDFManipulator" / "pdf_files"
         
-        if not os.path.exists(self.output_path):
+        if not self.output_path.exists():
             os.mkdir(self.output_path)
             
-        if os.path.exists(self.output_path / "resume_temp.pdf"):
+        if (self.output_path / "resume_temp.pdf").exists():
             os.remove(self.output_path / "resume_temp.pdf")
         
         self.canva = canvas.Canvas(str(self.output_path / "resume_temp.pdf"), pagesize=A4)
@@ -302,7 +302,7 @@ class start:
         
         if not self.filter_by: self.filter_by = 'Total'
         
-        if os.path.exists(self.output_path / f"Relatorio de Higiênicos - {self.filter_by}"):
+        if (self.output_path / f"Relatorio de Higiênicos - {self.filter_by}").exists():
             os.remove(self.output_path / f"Relatorio de Higiênicos - {self.filter_by}")
         
         Path.move(
