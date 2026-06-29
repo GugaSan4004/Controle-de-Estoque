@@ -13,7 +13,8 @@ import subprocess
 from datetime import date
 from dotenv import load_dotenv
 
-load_dotenv()
+if not load_dotenv():
+    input(f">>> Fatal Error --> Environement File not setted! Please read the '.env.example' file to setup it properlly!")
 
 type_dict = {
     "BOX": "Caixas",

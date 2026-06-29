@@ -2,5 +2,5 @@
 *dbisam*
 *.vscode
 *temp
-*.env*
+*.env
 att.png
