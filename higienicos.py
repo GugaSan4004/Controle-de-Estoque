@@ -1,3 +1,5 @@
+print("Inicializando, aguarde...")
+
 import os
 import sys
 import time
@@ -5,14 +7,12 @@ import modules
 import pyfiglet
 import datetime
 import tempfile
+import argparse
 import traceback
 import subprocess
 
 from datetime import date
 from dotenv import load_dotenv
-
-
-print("Inicializando, aguarde...")
 
 load_dotenv()
 
@@ -179,11 +179,13 @@ def Main():
 
     WebmailFullScreen = True
 
-    args = sys.argv[1] if len(sys.argv) > 1 else None
+    commandArgs = sys.argv[1] if len(sys.argv) > 1 else None
+    debugArgs = True if "--debug" in sys.argv or "-D" in sys.argv else None
+    autoYArgs = True if "--yes" in sys.argv or "-Y" in sys.argv else None
     
     while on:
         clear()
-
+                
         figlet("ALMOXARIFADO")
 
         print(
@@ -196,7 +198,7 @@ def Main():
             "[2] - Relatório de higiênicos mensal\n" +
             "[0] - Sair\n\n" +
             "Comando (0) >"
-        ) if not args else args
+        ) if not commandArgs else commandArgs
 
         if script_choise == "0" or script_choise == "":
             on = False
@@ -206,6 +208,7 @@ def Main():
             return
 
         clear()
+        
         if script_choise == "1":
             EMAIL_BUYER = os.getenv("EMAIL_BUYER")
             EMAIL_HYGIENIC_SUPPLIER = os.getenv("EMAIL_HYGIENIC_SUPPLIER")
@@ -308,9 +311,10 @@ def Main():
 
             if purchaseNeeded:
                 webmail.sendEmail(
-                    "shipment", 
-                    [EMAIL_HYGIENIC_SUPPLIER],
-                    [EMAIL_OPERATIONAL_SUPERVISOR, EMAIL_BUYER, EMAIL_SHOPPING_SUPERVISOR],
+                    "shipment",
+                    [EMAIL_SHOPPING_SUPERVISOR] if not debugArgs else [os.getenv("EMAIL_USER")],
+                    [EMAIL_OPERATIONAL_SUPERVISOR, EMAIL_BUYER, EMAIL_TR_SUPERVISOR] if not debugArgs else [],
+                    autoYArgs=autoYArgs,
                     actualStock=stock,
                     stockNeeded=valuesNeeded
                 )
@@ -394,17 +398,17 @@ def Main():
                     
             webmail.sendEmail(
                 "report", 
-                # ["guga.4004@hotmail.com"],
-                [EMAIL_SHOPPING_SUPERVISOR],
-                [EMAIL_OPERATIONAL_SUPERVISOR, EMAIL_BUYER, EMAIL_TR_SUPERVISOR],
+                [EMAIL_SHOPPING_SUPERVISOR] if not debugArgs else [os.getenv("EMAIL_USER")],
+                [EMAIL_OPERATIONAL_SUPERVISOR, EMAIL_BUYER, EMAIL_TR_SUPERVISOR] if not debugArgs else [],
+                autoYArgs=autoYArgs,
                 startDate=start_date,
+                stockTotal=stockTotal,
                 finishDate=finish_date,
-                reportValues=reportValues,
-                stockTotal=stockTotal
+                reportValues=reportValues
             )
         
             close(sql, webmail, pdf)
-        args = None
+        commandArgs = None
 
 if __name__ == "__main__":
     try:

@@ -141,7 +141,6 @@ class start:
                 "sabnow": "{:.2f}".format(actualStock["R3"]["SAB"] - stockNeeded["SAB"]),
             }
         elif template.lower() == "report":
-            
             templateFile = "RelatorioEmail_template.html"
             start_date = kwargs.get("startDate")
             stockTotal = kwargs.get("stockTotal")
@@ -151,13 +150,13 @@ class start:
             if not reportValues or not start_date or not finish_date or not stockTotal:
                 raise Exception("Values not passed!")
             
-            hig_total = reportValues["TOTAL"]["hig"]["totalUnity"]
-            toa_total = reportValues["TOTAL"]["toa"]["totalUnity"]
-            sab_total = reportValues["TOTAL"]["sab"]["totalUnity"]
+            hig_total_unity = reportValues["TOTAL"]["hig"]["totalUnity"]
+            toa_total_unity = reportValues["TOTAL"]["toa"]["totalUnity"]
+            sab_total_unity = reportValues["TOTAL"]["sab"]["totalUnity"]
 
-            hig_price = reportValues["TOTAL"]["hig"]["totalPrice"]
-            toa_price = reportValues["TOTAL"]["toa"]["totalPrice"]
-            sab_price = reportValues["TOTAL"]["sab"]["totalPrice"]
+            hig_total_price = reportValues["TOTAL"]["hig"]["totalPrice"]
+            toa_total_price = reportValues["TOTAL"]["toa"]["totalPrice"]
+            sab_total_price = reportValues["TOTAL"]["sab"]["totalPrice"]
             
             def fmt_currency(value: float) -> str:
                 return f"R$ {value:,.4f}".replace(",", "X").replace(".", ",").replace("X", ".")
@@ -167,7 +166,7 @@ class start:
 
             def calc_total(mov: dict, cc: str) -> float:
                 return sum(
-                    mov[cc][item]["totalUnity"] * mov[cc][item]["totalUnity"]
+                    mov[cc][item]["totalPrice"]
                     for item in ("hig", "toa", "sab")
                 )
 
@@ -179,15 +178,15 @@ class start:
                 return {
                     f"ph{prefix}cx":   fmt_qty(hig["totalUnity"]),        # caixas
                     f"ph{prefix}rl":   fmt_qty(hig["totalUnity"] * 8),             # rolos
-                    f"valph{prefix}":  fmt_currency(hig["totalUnity"] * hig["totalUnity"]),
+                    f"valph{prefix}":  fmt_currency(hig["totalPrice"]),
 
                     f"pt{prefix}cx":   fmt_qty(toa["totalUnity"] / 6),
                     f"pt{prefix}rl":   fmt_qty(toa["totalUnity"]),
-                    f"valpt{prefix}":  fmt_currency(toa["totalUnity"] * toa["totalUnity"]),
+                    f"valpt{prefix}":  fmt_currency(toa["totalPrice"]),
 
                     f"s{prefix}cx":    fmt_qty(sab["totalUnity"] / 2),
                     f"s{prefix}gl":    fmt_qty(sab["totalUnity"]),
-                    f"vals{prefix}":   fmt_currency(sab["totalUnity"] * sab["totalUnity"]),
+                    f"vals{prefix}":   fmt_currency(sab["totalPrice"]),
 
                     f"valtt{prefix}":  fmt_currency(calc_total(mov, cc)),
                 }
@@ -201,22 +200,22 @@ class start:
                 **build_cc_values(reportValues, "TR1", "tr"),
 
                 # totals
-                "phtsc":   fmt_qty(hig_total / 8),
-                "phtsrl":  fmt_qty(hig_total),
-                "valphtt": fmt_currency(hig_total * hig_price),
+                "phtsc":   fmt_qty(hig_total_unity),
+                "phtsrl":  fmt_qty(hig_total_unity * 8),
+                "valphtt": fmt_currency(hig_total_price),
 
-                "pttsc":   fmt_qty(toa_total / 6),
-                "pttsrl":  fmt_qty(toa_total),
-                "valpttt": fmt_currency(toa_total * toa_price),
+                "pttsc":   fmt_qty(toa_total_unity / 6),
+                "pttsrl":  fmt_qty(toa_total_unity),
+                "valpttt": fmt_currency(toa_total_price),
 
-                "stsc":    fmt_qty(sab_total / 2),
-                "stsgl":   fmt_qty(sab_total),
-                "valstt":  fmt_currency(sab_total * sab_price),
+                "stsc":    fmt_qty(sab_total_unity / 2),
+                "stsgl":   fmt_qty(sab_total_unity),
+                "valstt":  fmt_currency(sab_total_price),
 
                 "valtt":   fmt_currency(
-                    hig_total * hig_price +
-                    toa_total * toa_price +
-                    sab_total * sab_price
+                    hig_total_price +
+                    toa_total_price +
+                    sab_total_price
                 ),
                 
                 "eahigc": f"{stockTotal["hig"]:.2f}",
@@ -228,7 +227,7 @@ class start:
                 "easab": f"{stockTotal["sab"]/2:.2f}",
                 "easab2": f"{stockTotal["sab"]:.2f}",
             }
-                        
+                                    
             titleMessage = f"Relatório de Higiênicos | {values.get('month','')}"
         else:
             raise Exception("Template not found!")
@@ -293,9 +292,9 @@ class start:
         with tempfile.NamedTemporaryFile('w', delete=False, suffix='.html', encoding='utf-8') as f:
             f.write(html_content)
             file_path = f.name
-
-        response = input("\n>> Confira as informações do email na pré-visualização\n\n[Y] para enviar o email ou qualquer outra tecla para cancelar o envio\n\nComando [Y]>").lower()
-        if response in ["y", "", None]:
+        
+        response = "y" if kwargs.get("autoYArgs") else input("\n>> Confira as informações do email na pré-visualização\n\n[Y] para enviar o email ou qualquer outra tecla para cancelar o envio\n\nComando [Y]>").lower()
+        if response.lower() in ["y", "", None]:
             self.wait.until(EC.element_to_be_clickable((By.ID, "webmailbutton-1161-btnEl"))).click()
             
             print("\n>> Email enviado com sucesso!")
