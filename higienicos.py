@@ -57,33 +57,33 @@ def printPreview(stock):
         return min(needed, available)
 
     StockNeeded_hig = calc_stock_needed(
-        stock["IDEAL"]["HIG"] - stock["ALMOX"]["HIG"],
+        stock["IDEAL"]["HIG"] - stock["ALMOX"]["HIG"]["QUANTITY"],
         min_value=stock["MINIMUM"]["HIG"],
-        available=stock["R3"]["HIG"]
+        available=stock["R3"]["HIG"]["QUANTITY"]
     )
 
     StockNeeded_toa = calc_stock_needed(
-        stock["IDEAL"]["TOA"] - stock["ALMOX"]["TOA"],
+        stock["IDEAL"]["TOA"] - stock["ALMOX"]["TOA"]["QUANTITY"],
         min_value=stock["MINIMUM"]["TOA"],
-        available=stock["R3"]["TOA"]
+        available=stock["R3"]["TOA"]["QUANTITY"]
     )
 
     StockNeeded_sab = calc_stock_needed(
-        stock["IDEAL"]["SAB"] - stock["ALMOX"]["SAB"],
+        stock["IDEAL"]["SAB"] - stock["ALMOX"]["SAB"]["QUANTITY"],
         min_value=stock["MINIMUM"]["SAB"],
-        available=stock["R3"]["SAB"]
+        available=stock["R3"]["SAB"]["QUANTITY"]
     )
 
     summary_lines = [
         "\n> Resumo:\n",
         "\nNos temos:\n",
-        f"{stock["ALMOX"]["HIG"]} {stock["ALMOX"]["HIG"]["UNITYTYPE"]}",
-        f"{stock["ALMOX"]["TOA"]} {stock["ALMOX"]["TOA"]["UNITYTYPE"]}",
-        f"{stock["ALMOX"]["SAB"]} {stock["ALMOX"]["SAB"]["UNITYTYPE"]}\n",
+        f"{stock["ALMOX"]["HIG"]["QUANTITY"]} {stock["ALMOX"]["HIG"]["UNITYTYPE"]}",
+        f"{stock["ALMOX"]["TOA"]["QUANTITY"]} {stock["ALMOX"]["TOA"]["UNITYTYPE"]}",
+        f"{stock["ALMOX"]["SAB"]["QUANTITY"]} {stock["ALMOX"]["SAB"]["UNITYTYPE"]}\n",
         "\nNa requinte temos:\n",
-        f"{stock["R3"]["HIG"]} {stock["R3"]["HIG"]["UNITYTYPE"]}",
-        f"{stock["R3"]["TOA"]} {stock["R3"]["TOA"]["UNITYTYPE"]}",
-        f"{stock["R3"]["SAB"]} {stock["R3"]["SAB"]["UNITYTYPE"]}\n",
+        f"{stock["R3"]["HIG"]["QUANTITY"]} {stock["R3"]["HIG"]["UNITYTYPE"]}",
+        f"{stock["R3"]["TOA"]["QUANTITY"]} {stock["R3"]["TOA"]["UNITYTYPE"]}",
+        f"{stock["R3"]["SAB"]["QUANTITY"]} {stock["R3"]["SAB"]["UNITYTYPE"]}\n",
     ]
     
     if StockNeeded_hig >= 0 or StockNeeded_toa >= 0 or StockNeeded_sab >= 0:
@@ -92,13 +92,13 @@ def printPreview(stock):
         summary_lines.append("{:.2f} ".format(StockNeeded_toa) + stock["ALMOX"]["TOA"]["UNITYTYPE"])
         summary_lines.append("{:.2f} ".format(StockNeeded_sab) + stock["ALMOX"]["SAB"]["UNITYTYPE"])
 
-        confirmMessage = "\\n[1] - Confirmar \\n[2] - Alterar valores do pedido\\n[0] - Cancelar\\n "
+        summary_lines.append("\n[1] - Confirmar \n[2] - Alterar valores do pedido\n[0] - Cancelar\n ")
     else:
         summary_lines.append("\n>> Não precisamos pedir nada ainda.")
-        confirmMessage = "\\n[1] - confirmar \\n[2] - adicionar valor extra no pedido\\n[0] - Cancelar\\n"
+        summary_lines.append("\n[1] - confirmar \n[2] - adicionar valor extra no pedido\n[0] - Cancelar\n")
 
-    user_input = CMDAuxiliar(confirmMessage, "1")
-    
+    user_input = CMDAuxiliar(summary_lines, "1")
+
     if user_input == "1" or user_input == "":
         return True, {
             "HIG": "{:.2f}".format(StockNeeded_hig), 
@@ -211,13 +211,14 @@ def Main():
         
         if script_choise == "1":
             EMAIL_BUYER = os.getenv("EMAIL_BUYER")
+            EMAIL_TR_SUPERVISOR = os.getenv("EMAIL_TR_SUPERVISOR")
             EMAIL_HYGIENIC_SUPPLIER = os.getenv("EMAIL_HYGIENIC_SUPPLIER")
             EMAIL_SHOPPING_SUPERVISOR = os.getenv("EMAIL_SHOPPING_SUPERVISOR")
             EMAIL_OPERATIONAL_SUPERVISOR = os.getenv("EMAIL_OPERATIONAL_SUPERVISOR")
             
             figlet("PEDIDOS")
 
-            if not EMAIL_BUYER or not EMAIL_HYGIENIC_SUPPLIER or not EMAIL_SHOPPING_SUPERVISOR or not EMAIL_OPERATIONAL_SUPERVISOR:
+            if not EMAIL_BUYER or not EMAIL_TR_SUPERVISOR or not EMAIL_HYGIENIC_SUPPLIER or not EMAIL_SHOPPING_SUPERVISOR or not EMAIL_OPERATIONAL_SUPERVISOR:
                 raise Exception("Environement not set!")
 
             webmail = modules.WebmailCore(30, WebmailFullScreen)
@@ -343,8 +344,8 @@ def Main():
             
             start_date: date
             
-            if today.day > 6:
-                start_date = today - datetime.timedelta(days=1)
+            if today.day >= 1 and today.day <= 6:
+                start_date = (today - datetime.timedelta(days=1)).replace(day=1)
             else:
                 start_date = today
             
@@ -355,6 +356,8 @@ def Main():
             reportValues = {}
             
             for CC in ["COMLI", "TR1", "TOTAL"]:
+                # print(start_date.strftime("%Y-%m-%d"))
+                # input(finish_date.strftime("%Y-%m-%d"))
                 movements = sql.selectMovement(start_date.strftime("%Y-%m-%d"), finish_date.strftime("%Y-%m-%d"), CC, fetchOne=False)
                 
                 if movements == None:

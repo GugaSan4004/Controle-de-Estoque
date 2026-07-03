@@ -114,13 +114,13 @@ class start:
             tomorrow = now + datetime.timedelta(days=1)
             templateFile = "PedidoEmail_template.html"
             
-            calendar = {
-                "Monday": "Segunda Feira",
-                "Tuesday": "Terça Feira",
-                "Wednesday": "Quarta Feira",
-                "Thursday": "Quinta Feira",
-                "Friday": "Sexta Feira"
-            }
+            # calendar = {
+            #     "Monday": "Segunda Feira",
+            #     "Tuesday": "Terça Feira",
+            #     "Wednesday": "Quarta Feira",
+            #     "Thursday": "Quinta Feira",
+            #     "Friday": "Sexta Feira"
+            # }
             
             stockNeeded = kwargs.get("stockNeeded")
             actualStock = kwargs.get("actualStock")
@@ -129,7 +129,7 @@ class start:
                 raise Exception("Values not passed!")
             values = {
                 "talktime": "Boa tarde" if now.hour >= 13 else "Bom dia",
-                "weekday": calendar[tomorrow.strftime('%A')],
+                "weekday": tomorrow.strftime('%A'),
                 "dateship": tomorrow.strftime('%d/%m/%Y'),
                 
                 "higout": "{:.2f}".format(stockNeeded["HIG"]),

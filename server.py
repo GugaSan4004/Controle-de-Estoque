@@ -82,7 +82,7 @@ def insert():
             date = datetime.datetime.now().strftime("%d/%m/%y")
             
             if cc.upper() == "UNDERGROUND":
-                lastMovement = db.selectMovement("toUnderground", 1)
+                lastMovement = db.selectMovement(datetime.datetime.now().replace(day=1).strftime("%Y-%m-%d"), datetime.datetime.now().strftime("%Y-%m-%d"))
                 
                 if not lastMovement:
                     raise Exception("movements not found!")

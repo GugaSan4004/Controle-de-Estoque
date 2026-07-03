@@ -18,7 +18,7 @@ class start:
         
         __cur.close()    
     
-    def selectMovement(self, dateStart: str, dateEnd: str, ccFilter: str, fetchOne: bool = True) -> dict | None:
+    def selectMovement(self, dateStart: str, dateEnd: str, ccFilter: str | None = None, fetchOne: bool = True) -> dict | None:
         cur = self.connector.cursor()
 
         ITEMS = {}
@@ -81,13 +81,13 @@ class start:
                     # })
             return {k: v for k, v in grouped.items() if v}
 
-        if ccFilter:
+        if not ccFilter:
             cur.execute(
                 f"""
                 SELECT id, date, hig, toa, sab, responsible, cc
                 FROM movements
                 WHERE ('20' || substr(date,7,2) || '-' || substr(date,4,2) || '-' || substr(date,1,2))
-                    BETWEEN ? AND ?
+                    BETWEEN ? AND ? ORDER BY id DESC
                 """,
                 (dateStart, dateEnd)
             )
@@ -107,8 +107,7 @@ class start:
             rows = [dict(row) for row in cur.fetchall()]
             result = transform(rows)
         else:
-            row = cur.fetchone()
-            result = transform([dict(row)]) if row else {}
+            result = dict(cur.fetchone())
 
         cur.close()
 
@@ -154,7 +153,7 @@ class start:
         cur.execute(
             """
             INSERT INTO purchases
-                (toPlace, hig, toa, sab, received, shippingNoteId)
+                (toPlace, hig, toa, sab, received, shippingNoteId, date)
             VALUES (?, ?, ?, ?, ?, ?)
             """,
             (
@@ -163,7 +162,8 @@ class start:
                 toa,
                 sab,
                 1 if place.upper() == "R3" else received,
-                shippingNoteId
+                shippingNoteId,
+                date
             ),
         )
         
@@ -208,7 +208,7 @@ class start:
         
         for quantity in cur.fetchall():
             quantity = dict(quantity)
-            quantities[quantity["id"]] = quantity["quantity"]
+            quantities[str(quantity["id"])] = quantity["quantity"]
         
         cur.execute(f"UPDATE purchases SET received = 1, shippingNoteId = {noteId if noteId else 0} WHERE id = {dict(result).get("id")}")
         
