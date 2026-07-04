@@ -18,3 +18,5 @@ pywin32>=306
 
 # Utilities
 sympy>=1.12
+
+python-dotenv>=0.9.9

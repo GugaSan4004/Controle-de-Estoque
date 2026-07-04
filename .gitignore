@@ -2,6 +2,7 @@
 *dbisam*
 *.vscode
 *temp
-*.env*
+*env
 att.png
-*old*
+__pycache__/
+node_modules/
