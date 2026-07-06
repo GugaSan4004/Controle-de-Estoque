@@ -4,12 +4,12 @@ from datetime import datetime, date
 
 class ItemBase(BaseModel):
     name: Optional[str] = None
-    place: str = "ALMOX"
+    place: Optional[str] = None
     unityType: Optional[str] = None
-    unityPrice: int = 0
-    quantity: int = 0
-    minimum: int = 0
-    ideal: int = 0
+    unityPrice: Optional[int] = None
+    quantity: Optional[int] = None
+    minimum: Optional[int] = None
+    ideal: Optional[int] = None
     category: Optional[str] = None
 
 class ItemCreate(ItemBase):

@@ -1,11 +1,24 @@
-import database
+import os
+os.environ['TZ'] = 'UTC'
 
-from fastapi import FastAPI, HTTPException
+from sqlalchemy.orm import Session
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException, Depends
+
+import database
+# from database.models import *
+# from database.schema import *
+import database.audit
+
 
 app = FastAPI(
     title="Controle de Estoque",
     version="1.0"
 )
+
+@app.on_event("startup")
+def on_startup():
+    database.Base.metadata.create_all(bind=database.engine)
 
 @app.get("/")
 def home():
@@ -13,30 +26,23 @@ def home():
 
 
 @app.get("/items")
-def list_items():
-    db = database.SessionLocal()
-
+def list_items(db: Session = Depends(database.get_db)):
     items = db.query(database.Item).all()
-
-    result = []
-
-    for item in items:
-        result.append({
-            "id": item.id,
-            "name": item.name,
-            "quantity": item.quantity,
-            "price": item.price,
-            "min_quantity": item.min_quantity,
-            "ideal_quantity": item.ideal_quantity
-        })
-
-    db.close()
-
-    return result
+    return [
+        {
+            "id": i.id,
+            "name": i.name,
+            "quantity": i.quantity,
+            "unityPrice": i.unityPrice,
+            "minimum": i.minimum,
+            "ideal": i.ideal,
+        }
+        for i in items
+    ]
 
 
 # @app.get("/items/{item_id}")
-# def search_wwitem(item_id: int):
+# def search_item(item_id: int):
 #     db = SessionLocal()
 
 #     item = db.query(ItemsDB).filter(
@@ -61,27 +67,13 @@ def list_items():
 #     }
 
 
-# @app.post("/item")
-# def create_item(dados: ItemCreate):
-#     db = SessionLocal()
-
-#     item = ItemsDB(
-#         name=dados.name,
-#         quantity=dados.quantity,
-#         price=dados.price,
-#         min_quantity=dados.min_quantity,
-#         ideal_quantity=dados.ideal_quantity
-#     )
-
-#     db.add(item)
-#     db.commit()
-#     db.refresh(item)
-#     db.close()
-
-#     return {
-#         "message": "item criado",
-#         "id": item.id
-#     }
+@app.post("/item", response_model=database.ItemResponse, status_code=201)
+def create_item(data: database.ItemCreate, db: Session = Depends(database.get_db)):
+    item = database.Item(**data.model_dump())
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
 
 
 # @app.put("/item/{item_id}")

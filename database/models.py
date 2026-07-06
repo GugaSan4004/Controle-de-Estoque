@@ -12,11 +12,14 @@ from sqlalchemy import (
     Date,
     Text,
     Enum,
+    JSON,
+    CheckConstraint,
 )
 
 from sqlalchemy.orm import relationship
 
-from database import Base
+from database import Base as _Base
+
 
 class MovementType(enum.Enum):
     ENTRY = "ENTRY"
@@ -28,19 +31,19 @@ class MovementType(enum.Enum):
 class TimestampMixin:
     created_at = Column(
         DateTime,
-        default=datetime.utcnow,
+        default=datetime.now(),
         nullable=False
     )
 
     updated_at = Column(
         DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=datetime.now(),
+        onupdate=datetime.now(),
         nullable=False
     )
 
 
-class Item(TimestampMixin, Base):
+class Item(TimestampMixin, _Base):
     __tablename__ = "items"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -86,14 +89,14 @@ class Item(TimestampMixin, Base):
     )
 
 
-class Movement(TimestampMixin, Base):
+class Movement(TimestampMixin, _Base):
     __tablename__ = "movements"
 
     id = Column(Integer, primary_key=True, index=True)
 
     date = Column(
-        DateTime,
-        default=datetime.now(timezone.utc),
+        DateTime(timezone=True),
+        default=lambda: datetime.now(),
         nullable=False
     )
 
@@ -121,7 +124,7 @@ class Movement(TimestampMixin, Base):
     )
 
 
-class MovementItem(Base):
+class MovementItem(_Base):
     __tablename__ = "movements_items"
 
     id = Column(Integer, primary_key=True)
@@ -161,14 +164,14 @@ class MovementItem(Base):
     )
 
 
-class Purchase(TimestampMixin, Base):
+class Purchase(TimestampMixin, _Base):
     __tablename__ = "purchases"
 
     id = Column(Integer, primary_key=True)
 
     date = Column(
-        Date,
-        default=datetime.utcnow,
+        DateTime(timezone=True),
+        default=datetime.now(),
         nullable=False
     )
 
@@ -178,7 +181,7 @@ class Purchase(TimestampMixin, Base):
         default=False
     )
 
-    shippingNoteId = Column(Integer)
+    shippingNoteId = Column(Text)
 
     items = relationship(
         "PurchaseItem",
@@ -187,7 +190,7 @@ class Purchase(TimestampMixin, Base):
     )
 
 
-class PurchaseItem(Base):
+class PurchaseItem(_Base):
     __tablename__ = "purchases_items"
 
     id = Column(Integer, primary_key=True)
@@ -224,4 +227,29 @@ class PurchaseItem(Base):
     item = relationship(
         "Item",
         back_populates="purchases"
+    )
+
+
+
+
+class AuditAction(enum.Enum):
+    INSERT = "INSERT"
+    UPDATE = "UPDATE"
+    DELETE = "DELETE"
+
+class AuditLog(_Base):
+    __tablename__ = "audit_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    table_name = Column(Text, nullable=False, index=True)
+    row_id = Column(Text, nullable=False, index=True)  # Text: safe for composite/non-int PKs
+    action = Column(Enum(AuditAction), nullable=False)
+    old_values = Column(JSON, nullable=True)
+    new_values = Column(JSON, nullable=True)
+    changed_by = Column(Text, nullable=True)  # populate once auth exists
+    timestamp = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(),
+        nullable=False,
+        index=True,
     )
