@@ -1,22 +1,5 @@
-# Core
-pyfiglet>=1.0.0
-
-# Web Server
-flask>=3.0.0
-flask-socketio>=5.3.0
-eventlet>=0.33.0
-
-# PDF Generation
-reportlab>=4.0.0
-
-# Email Automation
-selenium>=4.15.0
-
-# System
-psutil>=5.9.0
-pywin32>=306
-
-# Utilities
-sympy>=1.12
-
-python-dotenv>=0.9.9
+uvicorn==0.50.2
+fastapi==0.139.0
+pydantic==2.13.4
+SQLAlchemy==2.0.51
+fastapi[standard]

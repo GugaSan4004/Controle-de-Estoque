@@ -1,8 +1,11 @@
 *.sqlite
+*.db
 *dbisam*
-*.vscode
+.vscode/
 *temp
 *env
 att.png
 __pycache__/
 node_modules/
+.fastapicloud/
+*disabled*
