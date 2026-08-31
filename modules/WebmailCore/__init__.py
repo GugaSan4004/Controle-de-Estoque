@@ -7,6 +7,7 @@ import datetime
 import tempfile
 
 from pathlib import Path
+from modules.console_manager import *
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -18,32 +19,30 @@ from selenium.webdriver.support import expected_conditions as EC
 locale.setlocale(locale.LC_TIME, "Portuguese_Brazil.1252")
 
 class start:
-    def __init__(self, Timeout: int, FullScreen: bool = False):
+    def __init__(self, Timeout: int, website: str, FullScreen: bool = False):
         tried: int = 0
         
-        print("> Inicializando Webmail... [ Esse processo pode demorar um pouco... ]")
+        printf("Inicializando Webmail... [ Esse processo pode demorar um pouco... ]")
         
-        
-        WEBSITE = os.getenv("EMAIL_WEBSITE")
         EMAIL = os.getenv("EMAIL_USER")
         PASSWORD = os.getenv("EMAIL_PASSWORD")
         
         os.environ["SE_OFFLINE"] = "true"
         
-        if not WEBSITE or not EMAIL or not PASSWORD:
+        if not website or not EMAIL or not PASSWORD:
             raise Exception("Environement not set!")
         
         while tried >= 0:
             try:
                 options = Options()
                 options.add_argument("--headless") if not FullScreen else options.add_argument("--full-screen")
-                
-                options.binary_location = r"C:\Users\ar.almoxarifado\AppData\Local\Mozilla Firefox\firefox.exe"
-                options.profile = r"C:\Users\ar.almoxarifado\AppData\Roaming\Mozilla\Firefox\Profiles\ykylgi0j.Bot"
+
+                options.binary_location = r"C:\Program Files\Mozilla Firefox\firefox.exe"
+                options.profile = r"C:\Users\Gustavo Ribeiro\AppData\Roaming\Mozilla\Firefox\Profiles\eoJ0Qp0i.Perfil 2"
 
                 driver = webdriver.Firefox(options=options)
                             
-                driver.get(WEBSITE)
+                driver.get(website)
                 
                 wait: WebDriverWait[WebDriver] = WebDriverWait(driver, Timeout)
                 
@@ -62,12 +61,14 @@ class start:
                 tried += 1
                 
                 if tried >= 3:
-                    print(f"\n>>> Error ao logar... Tentativas Excedidas... ({tried})\n\nError -> {e}")
+                    error(f"\nError ao logar... Tentativas Excedidas... ({tried})\n\nError -> {e}")
+
                     if driver:
                         driver.quit()
+                        
                     raise Exception(e)
                 else:
-                    print(f"\n>> Error ao logar... Tentando novamente... ({tried}º)")
+                    warning(f"\nError ao logar... Tentando novamente... ({tried}º)")
                     time.sleep(5)
             else:
                 tried = -1
@@ -79,9 +80,9 @@ class start:
         Path_alternative = ""
         
         if "parreira" in targetEmail.lower():
-            print("\n> Extraindo Email de \"Parreira\"...")
+            printf("Extraindo Email de \"Parreira\"...")
         elif "edielson" in targetEmail.lower():
-            print("\n> Extraindo Email de \"Edielson\"...")
+            printf("Extraindo Email de \"Edielson\"...")
       
         if "sent" in place:
             Path_main = "//span[contains(text(), 'Enviado')]"
@@ -104,7 +105,7 @@ class start:
         return self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, "email-body"))).text
 
     def sendEmail(self, template, dest: list, copy: list | None = None, **kwargs) -> bool:
-        print("\n> Preparando o Email ( Etapa Final )...")
+        printf("Preparando o Email ( Etapa Final )...")
 
         titleMessage = ""
         
@@ -112,33 +113,35 @@ class start:
             titleMessage = "Pedido de Higiênicos"
             now = datetime.datetime.now()
             tomorrow = now + datetime.timedelta(days=1)
+
+            if tomorrow.weekday() == 5:
+                tomorrow += datetime.timedelta(days=2)
+            elif tomorrow.weekday() == 6:
+                tomorrow += datetime.timedelta(days=1)
+
             templateFile = "PedidoEmail_template.html"
-            
-            calendar = {
-                "Monday": "Segunda Feira",
-                "Tuesday": "Terça Feira",
-                "Wednesday": "Quarta Feira",
-                "Thursday": "Quinta Feira",
-                "Friday": "Sexta Feira"
-            }
             
             stockNeeded = kwargs.get("stockNeeded")
             actualStock = kwargs.get("actualStock")
             
             if not stockNeeded or not actualStock:
                 raise Exception("Values not passed!")
+
+            talkname = dest[0].split("@")[0].split(".")[0].split("-")[0].split("_")[0]
+
             values = {
                 "talktime": "Boa tarde" if now.hour >= 13 else "Bom dia",
-                "weekday": calendar[tomorrow.strftime('%A')],
+                "talkname": talkname,
+                "weekday": tomorrow.strftime('%A'),
                 "dateship": tomorrow.strftime('%d/%m/%Y'),
                 
-                "higout": "{:.2f}".format(stockNeeded["HIG"]),
-                "toaout": "{:.2f}".format(stockNeeded["TOA"]),
-                "sabout": "{:.2f}".format(stockNeeded["SAB"]),
+                "higout": f"{stockNeeded['HIG']}",
+                "toaout": f"{stockNeeded['TOA']}",
+                "sabout": f"{stockNeeded['SAB']}",
 
-                "hignow": "{:.2f}".format(actualStock["R3"]["HIG"] - stockNeeded["HIG"]),
-                "toanow": "{:.2f}".format(actualStock["R3"]["TOA"] - stockNeeded["TOA"]),
-                "sabnow": "{:.2f}".format(actualStock["R3"]["SAB"] - stockNeeded["SAB"]),
+                "hignow": f"{float(actualStock['R3']['HIG']['QUANTITY']) - float(stockNeeded['HIG'])}",
+                "toanow": f"{float(actualStock['R3']['TOA']['QUANTITY']) - float(stockNeeded['TOA'])}",
+                "sabnow": f"{float(actualStock['R3']['SAB']['QUANTITY']) - float(stockNeeded['SAB'])}",
             }
         elif template.lower() == "report":
             templateFile = "RelatorioEmail_template.html"
@@ -176,12 +179,12 @@ class start:
                 sab = mov[cc]["sab"]
 
                 return {
-                    f"ph{prefix}cx":   fmt_qty(hig["totalUnity"]),        # caixas
-                    f"ph{prefix}rl":   fmt_qty(hig["totalUnity"] * 8),             # rolos
+                    f"ph{prefix}cx":   fmt_qty(hig["totalUnity"]),
+                    f"ph{prefix}rl":   fmt_qty(hig["totalUnity"] * 8),
                     f"valph{prefix}":  fmt_currency(hig["totalPrice"]),
 
-                    f"pt{prefix}cx":   fmt_qty(toa["totalUnity"] / 6),
-                    f"pt{prefix}rl":   fmt_qty(toa["totalUnity"]),
+                    f"pt{prefix}cx":   fmt_qty(toa["totalUnity"]),
+                    f"pt{prefix}rl":   fmt_qty(toa["totalUnity"] * 6),
                     f"valpt{prefix}":  fmt_currency(toa["totalPrice"]),
 
                     f"s{prefix}cx":    fmt_qty(sab["totalUnity"] / 2),
@@ -204,8 +207,8 @@ class start:
                 "phtsrl":  fmt_qty(hig_total_unity * 8),
                 "valphtt": fmt_currency(hig_total_price),
 
-                "pttsc":   fmt_qty(toa_total_unity / 6),
-                "pttsrl":  fmt_qty(toa_total_unity),
+                "pttsc":   fmt_qty(toa_total_unity),
+                "pttsrl":  fmt_qty(toa_total_unity * 6),
                 "valpttt": fmt_currency(toa_total_price),
 
                 "stsc":    fmt_qty(sab_total_unity / 2),
@@ -246,7 +249,8 @@ class start:
             time.sleep(0.4)
 
         for cc in copy if copy else []:
-            self.wait.until(EC.presence_of_element_located((By.ID, "mailfieldcombo-1186-inputEl"))).send_keys(cc)
+            if cc and cc != "":
+                self.wait.until(EC.presence_of_element_located((By.ID, "mailfieldcombo-1186-inputEl"))).send_keys(cc)
             time.sleep(0.4)
 
         title = self.wait.until(EC.presence_of_element_located((By.ID, "textfield-1194-inputEl")))
@@ -263,7 +267,7 @@ class start:
             with open(Path.cwd() /  "modules" / "WebmailCore" / "att.png", 'rb') as img_file:
                 SIGNATURE = base64.b64encode(img_file.read()).decode('utf-8')
         else:
-            print(">> Alerta - Imagem de assinatura não encontrada! Ignorando essa etapa...")
+            warning("Imagem de assinatura não encontrada! Pulando...")
         
         html_content = HTML_TEMPLATE.replace("cid:assinatura_logo", f"data:image/png;base64,{SIGNATURE}")
         
@@ -293,17 +297,17 @@ class start:
             f.write(html_content)
             file_path = f.name
         
-        response = "y" if kwargs.get("autoYArgs") else input("\n>> Confira as informações do email na pré-visualização\n\n[Y] para enviar o email ou qualquer outra tecla para cancelar o envio\n\nComando [Y]>").lower()
+        response = "y" if kwargs.get("autoYArgs") else input("\n> Confira as informações do email na pré-visualização\n\n[Y] para enviar o email ou qualquer outra tecla para cancelar o envio\n\nComando [Y]>").lower()
         if response.lower() in ["y", "", None]:
             self.wait.until(EC.element_to_be_clickable((By.ID, "webmailbutton-1161-btnEl"))).click()
             
-            print("\n>> Email enviado com sucesso!")
+            success("Email enviado com sucesso!")
             time.sleep(5)
             
             os.unlink(file_path)
             return True
         else:
-            print("\n>> Envio cancelado!")
+            warning("\nEnvio cancelado!")
             
             self.wait.until(EC.element_to_be_clickable((By.ID, "webmailbutton-1175-btnEl"))).click()
             time.sleep(1)
@@ -372,7 +376,7 @@ class start:
                         adjusted_year = now_dt.year
                     
                     if month_num != adjusted_month or year_part != adjusted_year:
-                        print(">> O email de compra não coincide com o mês esperado, pulando...")
+                        warning("O email de compra não coincide com o mês esperado, pulando...")
                         return
                 except Exception:
                     pass

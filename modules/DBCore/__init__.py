@@ -1,6 +1,8 @@
 import sqlite3
 
 from pathlib import Path
+from typing import Any
+from unittest import result
 
 class start:
     def __init__(self):        
@@ -18,7 +20,7 @@ class start:
         
         __cur.close()    
     
-    def selectMovement(self, dateStart: str, dateEnd: str, ccFilter: str, fetchOne: bool = True) -> dict | None:
+    def selectMovement(self, dateStart: str, dateEnd: str, ccFilter: str | None = None, fetchOne: bool = True) -> dict | None:
         cur = self.connector.cursor()
 
         ITEMS = {}
@@ -81,13 +83,13 @@ class start:
                     # })
             return {k: v for k, v in grouped.items() if v}
 
-        if ccFilter:
+        if not ccFilter or ccFilter == "TOTAL":
             cur.execute(
                 f"""
                 SELECT id, date, hig, toa, sab, responsible, cc
                 FROM movements
                 WHERE ('20' || substr(date,7,2) || '-' || substr(date,4,2) || '-' || substr(date,1,2))
-                    BETWEEN ? AND ?
+                    BETWEEN ? AND ? ORDER BY id DESC
                 """,
                 (dateStart, dateEnd)
             )
@@ -107,8 +109,7 @@ class start:
             rows = [dict(row) for row in cur.fetchall()]
             result = transform(rows)
         else:
-            row = cur.fetchone()
-            result = transform([dict(row)]) if row else {}
+            result = dict(cur.fetchone())
 
         cur.close()
 
@@ -151,20 +152,31 @@ class start:
             if len(result) > 0:
                 return False
         
+        columns = "toPlace, hig, toa, sab, received, shippingNoteId, shippingNoteSended"
+        placeholders = "?, ?, ?, ?, ?, ?, ?"
+        
+        values = [
+            place.upper(),
+            hig,
+            toa,
+            sab,
+            1 if place.upper() == "R3" else received,
+            shippingNoteId,
+            1 if place.upper() == "R3" else 0
+        ]
+        
+        if date is not None:
+            columns += ", date"
+            placeholders += ", ?"
+            values.append(date)
+    
         cur.execute(
-            """
+            f"""
             INSERT INTO purchases
-                (toPlace, hig, toa, sab, received, shippingNoteId)
-            VALUES (?, ?, ?, ?, ?, ?)
+                ({columns})
+            VALUES ({placeholders})
             """,
-            (
-                place.upper(),
-                hig,
-                toa,
-                sab,
-                1 if place.upper() == "R3" else received,
-                shippingNoteId
-            ),
+            values,
         )
         
         self.connector.commit()
@@ -208,9 +220,9 @@ class start:
         
         for quantity in cur.fetchall():
             quantity = dict(quantity)
-            quantities[quantity["id"]] = quantity["quantity"]
+            quantities[str(quantity["id"])] = quantity["quantity"]
         
-        cur.execute(f"UPDATE purchases SET received = 1, shippingNoteId = {noteId if noteId else 0} WHERE id = {dict(result).get("id")}")
+        cur.execute(f"UPDATE purchases SET received = 1, shippingNoteId = ? WHERE id = ?", (str(noteId) if noteId else 0, dict(result).get("id")))
         
         cur.execute(f"""
             UPDATE stock 
@@ -226,5 +238,21 @@ class start:
         """)
         
         self.connector.commit()
+
+        cur.close()
         
         return True
+
+    def getAllPendingDANFs(self) -> list[str] | None:
+        cur = self.connector.cursor()
+
+        cur.execute("SELECT shippingNoteId FROM purchases WHERE shippingNoteSended = 0 and received = 1")
+
+        ids = []
+        for id in cur.fetchall():
+            for id_splited in dict(id).get("shippingNoteId", "").split():
+                ids.append(id_splited)
+        
+        cur.close()
+
+        return None if len(ids) <= 0 else ids

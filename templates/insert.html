@@ -8,33 +8,35 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="/static/js/insert.js"></script>
 </head>
-<body class="h-screen bg-gray-900">
-    <form class="flex flex-col justify-center h-full gap-8 *:gap-1 *:grid mx-8 text-white" action="/" method="post">
+<body class="h-screen bg-gray-900 flex flex-col">
+    <form class="flex flex-col justify-center gap-8 *:gap-1 *:grid p-8 text-white" action="/" method="post">
         <h3 class="text-center text-3xl">Saida de Higienicos</h3>
         <div>
             <h1>Responsavel:</h1>
-            <select onchange="if (event.target.value === 'RECEIVE') { document.getElementById('note-id').hidden = false } else { document.getElementById('note-id').hidden = true }" required class="h-8 px-2 border border-gray-300 w-full" name="CC">
+            <select required class="*:bg-gray-900 h-8 px-2 border border-gray-300 w-full" name="CC">
                 <option value="COMLI">Shopping</option>
                 <option value="TR1">Terminal</option>
                 <option value="UNDERGROUND">Reposição do Subsolo</option>
                 <option value="RECEIVE">Recebimento</option>
             </select>
             <input required class="h-8 p-2 border border-gray-300 w-full" name="name" placeholder="Nome d@ responsavel" type="text">
-            <input class="h-8 p-2 border border-gray-300 w-full" id="note-id" name="noteId" name="noteId" type="text"  placeholder="Numero da Nota Fiscal" hidden>
+            <input class="h-8 p-2 border border-gray-300 w-full" id="note-id" name="noteId" type="text"  placeholder="Numero da Nota Fiscal. EX.: 123456789 987654321 123456789" hidden>
         </div>
         <div>
             <h1>Papel Higiênico Em {{hig.unityType}}. Quantidade atual = {{hig.quantity}} {{hig.unityType}}</h1>
-            <input required class="h-8 p-2 border border-gray-300 w-full" name="hig" type="number">
+            <input required class="h-8 p-2 border border-gray-300 w-full" name="hig" type="number" value="0">
         </div>
         <div>
             <h1>Papel Toalha Em {{toa.unityType}}. Quantidade atual = {{toa.quantity}} {{toa.unityType}}</h1>
-            <input required class="h-8 p-2 border border-gray-300 w-full" name="toa" type="number">
+            <input required class="h-8 p-2 border border-gray-300 w-full" name="toa" type="number" value="0">
         </div>
         <div>
             <h1>Sabonete Liquido Em {{sab.unityType}}. Quantidade atual = {{sab.quantity}} {{sab.unityType}}</h1>
-            <input required class="h-8 p-2 border border-gray-300 w-full" name="sab" type="number">
+            <input required class="h-8 p-2 border border-gray-300 w-full" name="sab" type="number" value="0">
         </div>
-        <button class="h-8 bg-green-800 cursor-pointer" type="submit">Enviar</button>
+        <button class="bg-green-800 h-8 cursor-pointer" type="submit">Enviar</button>
     </form>
+    <a href="environment" class="text-white/70 flex justify-center self-center">Configurar Ambiente</a>""
 </body>
+
 </html>

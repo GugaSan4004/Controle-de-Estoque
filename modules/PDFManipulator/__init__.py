@@ -1,11 +1,16 @@
 import os
+import re
 import time
+import base64
+import requests
 
 from pathlib import Path
 from datetime import date
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
+from modules.console_manager import *
 from reportlab.lib.pagesizes import A4
+
 
 PAGE_W, PAGE_H = A4
 LEFT = 15 * mm
@@ -39,7 +44,7 @@ TYPE_DICT = {
 
 class start:
     def __init__(self) -> None:
-        print("\n> Inicializando manipulador de PDF...")
+        printf("Inicializando manipulador de PDF...")
         
         self.BUSINESS = "MAIA E BORBA S/A"
         self.SYSTEM = "Sistema de Higiênicos"
@@ -260,8 +265,8 @@ class start:
         c.drawRightString(RIGHT, self.y, f"{totalGeneral:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") + TAB * 3 + f"{totalPrice:,.4f}".replace(",", "X").replace(".", ",").replace("X", "."))
         self.y -= LINE_H * 1.2
 
-    def generate(self, values: dict, start_date: str, finish_date: str, movement_type: str, filter_by: str = "TOTAL"):
-        print(f"\n> Gerando relatorio '{filter_by}'...")
+    def generateReport(self, values: dict, start_date: str, finish_date: str, movement_type: str, filter_by: str = "TOTAL"):
+        printf(f"Gerando relatorio '{filter_by}'...")
         
         if self.canva == None:
             self.canva = canvas.Canvas(str(self.output_path / "resume_temp.pdf"), pagesize=A4)
@@ -314,9 +319,31 @@ class start:
         self.y = 0.0
         self.page_num = 0
         
-        print(f">> Relatório '{self.movement_type} - {self.filter_by}' gerado com sucesso!")
+        warning(f"Relatório '{self.movement_type} - {self.filter_by}' gerado com sucesso!")
         
         return {
             {1322: "hig", 1323: "toa", 1324: "sab"}[data["id"]]: {**{k: v for k, v in data.items()}}
             for _, data in total_items.items()
         }
+    
+    def getDanfes(self, danfe_key: str):
+        clean_key = re.sub(r"\D", "", danfe_key)
+        
+        if len(clean_key) != 44:
+            raise ValueError(f"Invalid key! Expected 44 digits, got {len(clean_key)} digits.")
+
+        printf(f"Requisitando DANFE utilizando a chave: {clean_key}...")
+        response = requests.post(
+            'https://consultadanfe.com/api/v1/consulta',
+            json={'chave': clean_key}
+        )
+        
+        if response.status_code == 200:
+            pdf_bytes = base64.b64decode(response.json()['pdf_base64'])
+            with open(rf"modules\PDFManipulator\nfs\NF - {clean_key[25:34]} key - {clean_key}.pdf", "wb") as f:
+                f.write(pdf_bytes)
+            success(f">> Nota Fiscal {clean_key[25:34]} salva com sucesso!")
+            return True
+        else:
+            response = response.json()
+            raise Exception(f"Falha no download da NF -> {response.get("error", "Error Desconhecido: ")} {response.get("message", "unknown error!")}")
